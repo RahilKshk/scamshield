@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#F1F5F9}
+#z{border:1.5px dashed rgba(32,214,138,.5);border-radius:18px;background:#0D1420;padding:26px 16px;text-align:center;cursor:pointer;transition:.2s}
+#z:hover,#z.on{border-color:#20D68A;background:rgba(32,214,138,.08)}#z b{display:block;font-size:15px;margin-bottom:4px}#z span{font-size:12.5px;color:#94A3B8}input{display:none}
+#row{display:none;gap:14px;margin-top:12px;align-items:center;background:#111C2B;border:1px solid #263448;border-radius:14px;padding:10px}
+#p{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid #263448}#s{font-size:13px;color:#94A3B8}
+.bar{height:6px;border-radius:4px;background:#263448;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#20D68A;transition:width .2s}
+</style></head><body>
+<div id="z" role="button" tabindex="0"><b>Drag and drop a screenshot, or click to browse</b><span>PNG or JPG · read inside your browser, never uploaded</span><input type="file" id="f" accept="image/*"></div>
+<div id="row"><img id="p" alt="Screenshot preview"><div style="flex:1"><div id="s"></div><div class="bar"><i id="b"></i></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script>
+const $=i=>document.getElementById(i),z=$('z'),f=$('f');
+const send=(type,d)=>window.parent.postMessage(Object.assign({isStreamlitMessage:true,type},d),"*");
+send("streamlit:componentReady",{apiVersion:1});send("streamlit:setFrameHeight",{height:140});
+z.onclick=()=>f.click();z.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')f.click()};
+['dragover','dragenter'].forEach(v=>z.addEventListener(v,e=>{e.preventDefault();z.classList.add('on')}));
+['dragleave','drop'].forEach(v=>z.addEventListener(v,e=>{e.preventDefault();z.classList.remove('on')}));
+z.addEventListener('drop',e=>{if(e.dataTransfer.files[0])run(e.dataTransfer.files[0])});
+f.onchange=e=>{if(e.target.files[0])run(e.target.files[0])};
+async function run(file){
+  $('row').style.display='flex';$('p').src=URL.createObjectURL(file);send("streamlit:setFrameHeight",{height:260});
+  $('s').textContent='Reading text…';$('b').style.width='5%';
+  try{
+    const {data}=await Tesseract.recognize(file,'eng',{logger:m=>{if(m.status==='recognizing text'){const p=Math.round(m.progress*100);$('s').textContent='Reading text… '+p+'%';$('b').style.width=p+'%';}}});
+    $('s').textContent='Done. Analyzing…';$('b').style.width='100%';
+    send("streamlit:setComponentValue",{value:{text:data.text.trim(),id:Date.now()},dataType:"json"});
+  }catch(err){$('s').textContent='Could not read this image: '+err;}
+}
+</script></body></html>
