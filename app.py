@@ -13,6 +13,25 @@ try:
 except FileNotFoundError:
     st.warning("theme.css was not found next to app.py, so the new design cannot load. Copy theme.css into the same folder as app.py and refresh.")
 
+components.html("""<script>
+(function(){
+  var d=window.parent.document,o=window.parent.location.origin,s=o+'/app/static/';
+  function set(sel,tag,at){var e=d.querySelector(sel);if(!e){e=d.createElement(tag);d.head.appendChild(e);}for(var k in at)e.setAttribute(k,at[k]);}
+  d.title='ScamShield';
+  set('meta[name=application-name]','meta',{name:'application-name',content:'ScamShield'});
+  set('meta[name=apple-mobile-web-app-title]','meta',{name:'apple-mobile-web-app-title',content:'ScamShield'});
+  set('meta[name=apple-mobile-web-app-capable]','meta',{name:'apple-mobile-web-app-capable',content:'yes'});
+  set('meta[name=mobile-web-app-capable]','meta',{name:'mobile-web-app-capable',content:'yes'});
+  set('meta[name=theme-color]','meta',{name:'theme-color',content:'#080D16'});
+  d.querySelectorAll('link[rel*=icon]').forEach(function(l){l.remove();});
+  set('link[rel=apple-touch-icon]','link',{rel:'apple-touch-icon',href:s+'apple-touch-icon.png'});
+  set('link[rel=icon]','link',{rel:'icon',type:'image/png',href:s+'icon-192.png'});
+  var m={name:'ScamShield',short_name:'ScamShield',description:'Explainable scam message detector',start_url:o+'/',scope:o+'/',display:'standalone',background_color:'#080D16',theme_color:'#080D16',
+    icons:[{src:s+'icon-192.png',sizes:'192x192',type:'image/png'},{src:s+'icon-512.png',sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
+  set('link[rel=manifest]','link',{rel:'manifest',href:URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}))});
+})();
+</script>""", height=0)
+
 LAB = {"HIGH": ("Scam detected", "#FF5364"), "MEDIUM": ("Suspicious message", "#F5B942"), "LOW": ("Looks safe", "#20D68A")}
 SEV = {"High": "#FF5364", "Medium": "#F5B942", "Low": "#20D68A"}
 PAGES = [":material/space_dashboard: Dashboard", ":material/forum: Message scanner", ":material/image_search: Screenshot scanner",
